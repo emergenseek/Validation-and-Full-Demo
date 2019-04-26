@@ -1,0 +1,144 @@
+\documentclass[10pt, a4paper]{article}
+\usepackage[top=0.6in,bottom=1.0in,left=1.0in,right=1.0in]{geometry}
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx,float,tikz}
+\usepackage{listings}
+
+\fontfamily{times}
+\usepackage[colorlinks = true,
+            linkcolor = black,
+            urlcolor  = blue,
+            citecolor = blue,
+            anchorcolor = blue]{hyperref}
+
+\begin{document}
+\begin{titlepage}
+	\begin{center}
+		\begin{Large}
+		
+		\vspace*{4cm}
+		\centerline{ 	
+ 			\includegraphics[scale=.9]{logo.png}
+		}
+		\textbf{CS 4366: Senior Capstone Project \\ Dr. Sunho Lim \\ Texas Tech University \\ Project \#5 \\ Validation and Full Demo \\ EmergenSeek}
+ 
+		\vspace{0.5cm}
+		Spring 2019 Final Report 
+		\linebreak
+ 		by \\
+		\textbf{Suhas Bacchu \\ Derek Fritz \\ Kevon Manahan \\ Annie Vo \\ Simon Woldemichael}
+ 
+		\newpage
+ 		\end{Large}
+	\end{center}
+\end{titlepage}
+
+\vspace*{\fill}
+\begin{abstract}
+In this final report, we describe and detail the validation of EmergenSeek, a multiuse, cross-platform mobile application providing simple access to emergency services and contact connections. As with previous reports, we will structure the report by enumerating on the frontend and backend. Dissimilarly, we will only describe necessary details in the validation of our implementations, to the extent that, any other developer with some programming background will be able to successfully implement our system's components. Only necessary details will be presented to the reader and care should be taken when reading them\footnote{Concepts such as continuous integration, continuous deployment, microservices, serverless computing, NoSQL databases, APIs, and widget-based mobile development will be discussed. These new concepts may be difficult to grasp initially, but sufficient details will be provided.}. Restatements from previous deliverable reports will be made to remind the reader of pre-defined, but important information. Also, a glossary is provided at the end of the report to define terms and jargon that may be confusing or unfamiliar for the reader. \\
+\textit{Keywords:} API Gateway, CI/CD, Cloud, Dart, Flutter, Golang, Lambda, Mobile, Serverless
+\end{abstract}
+\vspace*{\fill}
+\newpage
+
+\tableofcontents
+\newpage
+
+
+\section{Introduction}
+\par ~ The development of EmergenSeek has been an effective software engineering experience for our group. In this final submission, we will discuss our project by first restating the idea, project motivations, and our successful implementations. Then, we will discuss the final state of our UML diagrams and architecture, for this Spring semester. Next, a walkthrough of the our development lifecycle, using only necessary details and supplementing those details with additional code comments, snippets, and screenshots. This walkthrough will allow the user to understand the structure of our application, both frontend and backend. Then, we will describe the current state of our serverless application repository; our collection of Lambda functions and a brief discussion on the microservices software architectural pattern that we follow. Lastly, we will display views of the mobile application and their respective functionality. 
+
+\par ~ It is very important to note that our project uses programming languages which are young in maturity and may not be familiar to the reader. But, our backend, written in Go, has syntax very similar to the C and C++ programming languages. Our frontend, written in Dart, has syntax very similar to the Java programming language. As a result of these similarities, it is permissible for the reader to assume what the code does as the syntax is, for the most part, straightforward. To conclude we will detail team member contributions and potential steps moving forward with the project.
+
+\subsection{Walkthrough}
+\par ~ The previously mentioned walkthrough will consist of the following, and be enumerated for a single Lambda function and a single Flutter application screen. This section should be referred to in the \hyperref[sec:pdl]{Project Development Lifecycle} section:
+\begin{enumerate}
+	\item[1.] Feature expectation. Answer the question of ``What feature do we need to implement and how do we implement it?''
+	\item[2.] Lambda function: Implement the feature and its expectations around the requirements of using AWS Lambda
+	\item[3.] Informal testing: Get an initial working version of the API Lambda function
+	\item[4.] Formal testing: Write unit tests for the implementation
+	\item[5.] Integration and Infrastructure as Code: Define the deployment
+	\item[6.] Continuous Integration: Do the deployment
+	\item[7.] Integrate Lambda functionality with the frontend
+	\begin{itemize}
+		\item[7a.] Create feature view. The view is effectively the screen that the user will interact with.
+		\item[7b.] Create feature model. Define how features will be referenced by the state of the application.
+		\item[7c.] Interface with Lambda function. Make calls via an HTTP client to the Lambda function
+	\end{itemize}
+\end{enumerate}
+\par ~ As all of our project code is open-source, readers are free to reference code repositories for our project. They are located at \url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client} for our backend and frontend code, respectively. Readers who would like more insight, or have questions are welcome to open an issue or pull request on either of these GitHub repositories.
+
+\section{Project Overview}
+\subsection{Project}
+\par ~ EmergenSeek is a mobile application which provides users with multiuse, centralized emergency information and notification services. This application gives friends and family members priority connections in times of emergency or crisis. Our sucessfully implemented, core feature are as follows:
+
+\begin{enumerate}
+	\item[1.] S.O.S. button emergency broadcast --- Users are able to utilize the mobile client to invoke an S.O.S. button for automated notification of contacts and emergency services. 
+	\item[2.] Emergency service locator --- Users are able to utilize the mobile client to search for emergency service (hospitals, and pharmacies). Currently, searching will return results up to a fixed radius of 20 miles.
+	\item[3.] Granular permission definitions for contacts --- The user is given full control over what contacts receive what level of information. This is achieved by setting alert tiers on a per-contact basis.
+	\item[4.] Lock screen display of health information for emergency services --- In the case of an S.O.S. situation, the user shall have their health information displayed for the convince of first respondents.
+\end{enumerate}
+
+\par ~ Features which are partially implemented are as follows:
+\begin{enumerate}
+	\item[1.] Periodic notifications to contacts (location-based polling) --- The user shall be able to utilize the mobile client to send periodically send their location information to contacts. While the logic is in-place, we currently do not have a successful implementation of repeating the location polling.
+	\item[2.] Retrieval of international emergency service numbers (ambulance, fire, and police), depending on the user's current location. Connections to the front-end have not been made yet.
+\end{enumerate}
+
+\par ~ Additionally, successfully implemented, quality of user-experience features are as follows. While the application is still functional without them, deploying the application for public, functional use, cannot not be possible without them.
+\begin{enumerate}
+	\item[1.] User registration and login --- Users are able to register for an account and track their personal information, necessary in an emergency event.
+	\item[2.] Settings persistence -- Users are able to change settings within the application to fit their preference.
+\end{enumerate}
+
+\par ~ Lastly, additional quality of user-experience features that have not been, but maybe implemented in the future are:
+\begin{enumerate}
+	\item[1.] More extensive error handling and reporting (via something like the Catcher, a Flutter package or Sentry.io a multi-language, multi-framework error reporting and management service)
+	\item[2.] More in-depth user preferences, settings and options
+	\item[3.] Alternative sign-up and log-in methods (Google, Facebook, etc.)
+\end{enumerate}
+
+
+\section{Implementation Details}
+\par ~ The implementation of EmergenSeek may be broken of into two core component, Amazon Web Services' (AWS) Lambda and the cross-platform mobile development framework Flutter. These two components also have their own respective, external dependcies and services. Our Lambda functions were written using the Go programming language and the Flutter application depends on the Dart programming language. This section is broken up into two subsections which describe the 
+
+
+
+
+
+
+
+\subsection{Subsystems}
+\par ~ The backend of the application will be comprised of the following. For brevity, each is labeled with a tier:
+\begin{enumerate}
+	\item[1.] Application Tier - AWS Lambda, a serverless, Functions-as-a-Service compute offering to run our Go code coupled with AWS API Gateway.
+	\item[2.] Database Tier - DynamoDB to store user data and information. We selected a NoSQL database because we knew that there would be changes to our data and schema, and wanted to rapidly make these changes without formally defining schemas which would be otherwise harder to change in the future.
+	\item[3.] Notification Tier - The Twilio API provides the system with programmable SMS and voice communications. It should be noted that our application does not use trial plan of Twilio and instead uses the paid version of the service. This allows us to contact any valid phone number through Twilio's API.
+	\item[4.] Location Tier - Google's Places and MapQuest's Geocoding APIs are used to better define the location of users and various emergency services. For instance, translation of latitude and longitude to human readable address.
+\end{enumerate}
+
+The subsystems of the application are divided up into single-responsibility, service-oriented architecture. This means that the backend consists of several Lambda functions and each function is responsible for only one thing. In total, at the time of this report, there are \emph{six} Lambda functions. The break down of their functionality and responsibilities are enumerated using a brief description, followed by any additional dependencies that they may have. These dependencies include any external APIs, datastores, or databases. Functions are prefixed with \texttt{ES} and suffixed with a meaningful name which explains their role.
+
+
+
+\section{Glossary}
+\begin{enumerate}
+	\item[$\bullet$] Cross-platform application - software which has a single implementation, but may be executed on different distributions. (i.e. one code base, running on many different operating systems or processor architectures.)
+	\item[$\bullet$] Serverless application repository - single responsibility application definitions which act as independent entities. The application repository as a whole defines the API for our mobile application. (i.e. each serverless application is a Lambda function, and the lambda function is responsible for a system feature.)
+	\item[$\bullet$] Application Programming Interface (API) - Definitions and communication protocols used for building the structure of software.
+	\item[$\bullet$] HyperText Transfer Protocol (HTTP) - An application protocol used heavily for websites and services throughout the Internet.
+
+\end{enumerate}
+
+\begin{thebibliography}{9}
+\bibitem{one}
+What is the AWS Serverless Application Model (AWS SAM)? ~ \url{https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html}
+\end{thebibliography}
+
+% Appendix of figures
+\begin{appendix}
+	\listoffigures
+\end{appendix}
+
+\end{document}
+
