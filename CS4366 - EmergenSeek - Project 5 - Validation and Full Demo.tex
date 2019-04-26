@@ -48,7 +48,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 
 
 \section{Introduction}
-\par ~ The development of EmergenSeek has been an effective software engineering experience for our group. In this final submission, we will discuss our project by (1) restating the idea, project motivations, and our successful implementations. Then, (2) we will discuss the final state of our UML diagrams and architecture, for this Spring semester. After, (3) we will discuss the development cycle for the frontend and backend and briefly touch on the microservices architecture that we follow. 
+\par ~ The development of EmergenSeek has been an effective software engineering experience for our group. In this final submission, we will discuss our project by (1) restating the idea and our successful implementations. Then, (2) we will discuss the final state of our UML diagrams and architecture, for this Spring semester. After, (3) we will discuss the development cycle for the frontend and backend and briefly touch on the microservices architecture that we follow. 
 
 \par ~ Next, (4) a walkthrough of the discussed development lifecycle, using only necessary details and supplementing those details with additional code comments, snippets, and screenshots. This walkthrough will allow the user to understand the structure of our application, both frontend and backend. The walkthrough will not cover \emph{everything} as the amount of content necessary for a walkthrough that assumes the reader has zero prior knowledge of the systems and concepts used in our project would take an obstructive amount of explanation. Then, (5) we will describe the current state of our serverless application repository; our collection of Lambda functions. To end (6) on our discussion of the validation, we will display Flutter views of the mobile application and their respective functionality. 
 
@@ -282,7 +282,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
   \caption{Screenshot of the definition for \texttt{verifyRequest}}\label{fig:vr}
 \end{figure}
 
-\par ~ The request checked against in Figure ~\ref{fig:vr}, line 17, is defined in request.go. In the Go programming language, data within the same package may be referenced globally. This is known as the package scope (within the same folder, ES. The importance of struct tags (\texttt{`json:"user\_id"`}), should be noted as these define the expectation of the request sent by the user.
+\par ~ The request checked against in Figure ~\ref{fig:vr}, line 17, is defined in request.go. In the Go programming language, data within the same package may be referenced globally. This is known as the package scope (within the same folder, ESSendEmergencyVoiceCall). The importance of struct tags (\texttt{`json:"user\_id"`}), should be noted as these define the expectation of the request sent by the user.
 
 \begin{figure}[H]
   \includegraphics[scale=.6]{code-screenshots/eight.png}
@@ -392,21 +392,21 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[scale=.7]{build-in-progress.PNG}
+  \includegraphics[scale=1]{build-in-progress.PNG}
   \caption{AWS CodeStar screenshot of a build in progress, after a Git Push to our code repository.}
 \end{center}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[scale=.7]{deploy-in-progress.PNG}
+  \includegraphics[scale=1]{deploy-in-progress.PNG}
   \caption{AWS CodeStar screenshot of a deploy in progress, after a successful build.}
 \end{center}
 \end{figure}
 
 \begin{figure}[H]
 \begin{center}
-  \includegraphics[scale=.7]{successful-deploy.PNG}
+  \includegraphics[scale=1]{successful-deploy.PNG}
   \caption{AWS CodeStar screenshot a successful CI/CD pipeline; deploy complete.}
 \end{center}
 \end{figure}
@@ -466,7 +466,79 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \end{figure}
 
 
+\section{Serverless Application Repository}
+\par ~ In this section we enumerate upon all 12 of the functions that we currently have in our repository.
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/sap.PNG}
+  \caption{Screenshot of our backend repository and its Lambda functions. It should be noted, again, that ESReadUser is deprecated and both ESPollLoop and ESGetEmergencyNumbers are yet to be integrated.}
+\end{center}
+\end{figure}
 
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1.2]{code-screenshots/func-table.PNG}
+  \caption{Table of the functions in our application repository. It should be noted that these are only functions that have been fully completed. The only function missing from the list is ESPollLoop.}
+\end{center}
+\end{figure}
+
+\section{Flutter Views}
+\par ~ In this section we display screenshots of our implemented views which will also be demoed during our final presentation with the course instructor.
+\begin{figure}[H]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126754.png}
+  \caption{Screenshot of our Service Locator's map.}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126766.png}
+  \caption{Screenshot of the Location Update settings screen.}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126781.png}
+  \caption{Screenshot of the S.O.S. button}
+\endminipage
+\end{figure}
+
+\begin{figure}[H]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126791.png}
+  \caption{Screenshot of the activated S.O.S. button's tier selection or cancel menu.}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126800.png}
+  \caption{Screenshot of the active state S.O.S. button.}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126813.png}
+  \caption{Screenshot of initial registration form.}
+\endminipage
+\end{figure}
+
+\begin{figure}[H]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126822.png}
+  \caption{Screenshot of the contacts screen.}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126824.png}
+  \caption{Screenshot of the contact tier registration and modification menu.}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126828.png}
+  \caption{Screenshot of contact view filter options.}
+\endminipage
+\end{figure}
+
+\begin{figure}[H]
+\minipage{0.45\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126833.png}
+  \caption{Screenshot of the application's About screen.}
+\endminipage\hfill
+\minipage{0.45\textwidth}
+  \includegraphics[width=\linewidth]{final-diagrams/Emulator-Screenshots/Screenshot_1556126840.png}
+  \caption{Screenshot of the application's login screen.}
+\endminipage\hfill
+\end{figure}
 
 \section{Conclusion}
 \subsection{Implementation Challenges}
@@ -477,8 +549,14 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \par ~ Similarly to our partial demo and implementation, one of the largest implementation issues we have had thus far is the integration of AWS CloudFormation for automatically provisioning the resources necessary for creating each Lambda function and their respective API Gateway route. Overall, assigning the correct permissions for the service workers responsible for creating these resources is the biggest issue. We currently still need to correct this issue.
 
 \subsection{Group Member Contributions}
-\par ~ 
+Annie: Service Locator Page, Service Locator Lambda \\
+Derek: Sign-In Page, SOS Alerts Page, Profile Page, Contacts Page \\
+Kevon: Location Updates Page, Check-in feature \\
+Simon: Poll Location Lambda, Voice Call Lambda, SMS Notification Lambda, Get Emergency Numbers Lambda, Add Contact Lambda, CodeStar integration \\
+Suhas: Lock Screen Info Lambda, Update On Open Lambda, Manage Settings Lambda, Create User Lambda, Poll Loop Lambda \\
 
+\subsection{Closing}
+\par ~ In closing, we completed a majority of all of our major features for the application and made tremendous progress in clearing out all of our functional and non-functional requirements. While we have come to an end of the project, concepts, tools, and technologies that we utilized will be useful to us in the future..
 
 \section{Glossary}
 \begin{enumerate}
