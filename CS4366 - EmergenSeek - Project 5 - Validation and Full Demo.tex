@@ -223,13 +223,13 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \hrule
 \vspace{2mm}
 
-\par ~ Microservices, on the other hand, are decentralized, independent components of a larger product that each do one thing well for the sake of the application as a whole. This is why we chose to follow this style of development. This is why we chose to follow a microservices architecture. We did not need to wait on one another to fulfill the implementation of a Lambda function. These \underline{loosely-coupled} components bring up many more challenges than a monolithic product, but their modularity and distributable attributes make them much easier and much faster to develop and deploy.
+\par ~ Microservices, on the other hand, are decentralized, independent components of a larger product that each do one thing well for the sake of the application as a whole. This is why we chose to follow this style of development. This is why we chose to follow a microservices architecture. We did not need to wait on one another to fulfill the implementation of a Lambda function. These \underline{loosely-coupled} components bring up many more challenges than a monolithic product, but their modularity and distributable attributes make them much easier and much faster to develop and deploy \cite{two}. 
 \end{tcolorbox}
 	
 
 \section{Project Development Lifecycle} 
 \label{sec:pdl}
-\par ~ In this section we discuss our actual implementation details, beginning with the backend and moving on to the frontend. For the benefit of the reader, we will discuss our most complex Lambda function, ESSendEmergencyVoiceCall, which provides the frontend the ability to make phone calls via Twilio's API. The programming styles, and patterns used can be generalized to our other functions. Because of this, we will only cover the full lifecycle of one function in this section. Again, it is recommend that readers reference our GitHub repositories for more details and additional notes of reference: (\url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client}) 
+\par ~ In this section we discuss our actual implementation details, beginning with the backend and moving on to the frontend. For the benefit of the reader, we will discuss our most complex Lambda function, ESSendEmergencyVoiceCall, which provides the frontend the ability to make phone calls via Twilio's API. The programming styles, and patterns used can be generalized to our other functions. Because of this, we will only cover the full lifecycle of one function in this section. Again, it is recommend that readers reference our GitHub repositories for more details and additional notes of reference: (\url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client}). Details such as obtaining Twilio and MapQuest API keys, and configuring AWS are left up to the reader. 
 
 \subsection{Go - Setup}
 \par ~ First, we begin with our backend repository, in this repository we have 2 key folders, \texttt{common} and \texttt{functions}. Common encapsulates, four packages, \texttt{package database}, \texttt{package driver}, \texttt{package models}, and \texttt{package notification}. The names of these packages are self explanatory. Database encapsulates database functions, driver encapsulates important backend logic functions, models encapsulates data models, and notification encapsulates functions related to Twilio Voice and SMS communication. The const.go file defines constants used through the application and belongs to the parent package, \texttt{package common}. The functions folder encapsulates our serverless application repository, for this walk through we will only focus on ESSendEmergencyVoiceCall. Within the ESSendEmergencyVoiceCall we have 6 key files. 
@@ -294,7 +294,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
   \caption{Screenshot of Validate, pointer-receiver method bound to the Request type.}
 \end{figure}
 
-\par ~ Now that the request is validated, we can continue the function execution, the flow is as follows, annotated with code line numbers present in the next fix figures.
+\par ~ Now that the request is validated, we can continue the function execution, the flow is as follows, annotated with code line numbers present in the next six figures, and an additional two.
 \begin{figure}[H]
   \includegraphics[scale=.6]{code-screenshots/handler-42-63.png}
   \caption{Screenshot of lines 42 through 63 of \texttt{func Handler}}\label{fig:hm}
@@ -325,23 +325,159 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
   \caption{Screenshot of \texttt{func CreateTwilMLXML} within \texttt{package driver}}\label{fig:ct}
 \end{figure}
 
-First, Figure ~\ref{fig:hm} line 42, we call CreateAll (Figre ~\ref{fig:ca} in the driver package. This will return 4 items, an instance of our database, a connection to our Twilio functions within the notification package, an AWS session that can be used to authenticate with different services, and mapKey used for making requests to MapQuest. Then, Figure
+\par ~ First, Figure~\ref{fig:hm} line 42, we call CreateAll (Figure~\ref{fig:ca}) in the driver package. This will return 4 items, an instance of our database, a connection to our Twilio functions within the notification package, an AWS session that can be used to authenticate with different services, and mapKey used for making requests to MapQuest. Then, Figure~\ref{fig:hm} line 45, we call GetUser (Figure~\ref{fig:gu}) and return an error if the user does not exist or the request to DynamoDB fails. Continuing, Figure~\ref{fig:hm} line 51 we attempt to update the user's location by calling UpdateLocation (Figure~\ref{fig:ul}), but do not terminate the flow of the program if an error occurs, because this is a secondary functionality of the function. We try to update the user's location as they interact with various API endpoints, but cannot always guarantee the most update to date location.
+
+\par ~ Then, Figure~\ref{fig:hm} line 54 we call GetAddress (Figure~\ref{fig:ga}) to translate the user's current location into a human readable street, city, country code and zipcode, this utilizes the MapQuest API. The last two parameters, false and 0, are workarounds for controlling whether or not we should consider alert tier, because this function is called using other Lambda functions which have this requirement. After, Figure~\ref{fig:hm} line 60, we create a TwilML (Twilio Markup Language) definition that will be passed to Twilio by calling CreateTwilMLXML (Figure~\ref{fig:ct}). This is how Twilio's voice service is programmed by developers. The language is an XML document, that contains some derectives for defining what voice will be used, how many times the content will be said, what content will be said. 
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/handler-66-82.PNG}
+  \caption{Screenshot of lines 66 through 82 of \texttt{func Handler}}\label{fig:hmtwo}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.7]{code-screenshots/upload-twilml.PNG}
+  \caption{Screenshot of \texttt{func UploadTwilMlXML} within \texttt{package driver}}\label{fig:ut}
+\end{figure}
+
+\par ~ To make this document accessible to Twilio's API, we upload it to Amazon's Simple Storage Service (S3) at Figure~\ref{fig:hmtwo} line 66 by calling UploadTwilMlXML (Figure~\ref{fig:ut}). At the end of \texttt{func Handler} in Figure~\ref{fig:hmtwo}, lines 81 and 82 entail responding to the requesting client with a HTTP 200 OK response and a generic, identifiable message.
+
+\subsection{Informal Testing}
+\par ~ Now that we have written the Lambda function, we can informally test it. To do this we use will use the Serverless Application Model command-line interface (SAM CLI) \cite{three}. Installation and setup details are available in the README.md file of our backend repository. The SAM CLI allows us to test our application in a Docker container, similar to the environment provided by AWS, in the cloud. Instead of deploying the application and later discovering that we have issues, we can catch those issues much quicker by doing the testing and debugging in our local environment. Doing this is as follows.
+
+\begin{enumerate}
+	\item[1.] Define a SAM template.yml definition. This YAML definition will define our Lambda function and API Gateway Endpoint.
+	\item[2.] Start Docker
+	\item[3.] Run \texttt{make sam} to run a series of commands that build, package, and start the local API
+	\item[4.] Run \texttt{make test} to test the endpoint using the sample request defined in \texttt{event.json}
+\end{enumerate}
+
+\begin{figure}[H]
+  \includegraphics[scale=.7]{code-screenshots/local-template.png}
+  \caption{Screenshot of the local template.yml used for SAM.}
+\end{figure}
+\begin{figure}[H]
+  \includegraphics[scale=.7]{code-screenshots/event.PNG}
+  \caption{Screenshot of the event.json used for locally testing this function.}
+\end{figure}
+\begin{figure}[H]
+  \includegraphics[scale=.7]{code-screenshots/makefile.PNG}
+  \caption{Screenshot of the Makefile rules used to make testing more convenient.}
+\end{figure}
+
+\subsection{Formal Testing}
+\par ~ Next, now that we're confident, that our function behaves as expected we can write formal unit tests for it. These tests are defined in a functions main\_test.go file. The file defines one function for unit testing the handler, and a testing object. This testing object is apart of the Go standard library and provides many useful tools for writing tests. The tests for our application, although not all have unit tests, follow the table-driven testing (TDD) pattern. Tests are given some expected paramters and are looped over to cover different edge cases. For this test, we only have one test in the table. This test also uses a pre-defined user id, located in a DynamoDB table.
+\begin{figure}[H]
+  \includegraphics[scale=.7]{code-screenshots/main-test.PNG}
+  \caption{Screenshot of the test function located in main\_test.go for testing \texttt{func Handler} of ESSendEmergencyVoiceCall.}
+\end{figure}
+
+\subsection{Deployment}
+\par ~ Continuing, now that we have defined a formal test, we can proceed to pushing our code to the master branch of our repository and begin the deployment. To do this, we update our buildspec.yml and template.yml in the root of the repository. Changes to the template.yml are similar to the initial creation of the file we made for local SAM CLI for testing. 
+\begin{enumerate}
+	\item[1.] Update buildspec pre\_build stage with:
+	\begin{center}
+		\includegraphics[scale=1]{code-screenshots/pre-build.PNG}
+	\end{center}
+	\item[2.] Update buildspec build stage with :
+	\begin{center}
+		\includegraphics[scale=1]{code-screenshots/build.PNG}
+	\end{center}
+	\item[3.] Add new resource and matching route/request method to template.yml:
+	\begin{center}
+		\includegraphics[scale=1]{code-screenshots/deploy-template.PNG}
+	\end{center}
+\end{enumerate}
+
+\par ~ After adding, committing,and pushing to the master branch of our GitHub repository, AWS CodeStar will take over and handle our continuous integration and continuous deployment by using the definitions in the buildspec.yml and template.yml.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=.7]{build-in-progress.PNG}
+  \caption{AWS CodeStar screenshot of a build in progress, after a Git Push to our code repository.}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=.7]{deploy-in-progress.PNG}
+  \caption{AWS CodeStar screenshot of a deploy in progress, after a successful build.}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=.7]{successful-deploy.PNG}
+  \caption{AWS CodeStar screenshot a successful CI/CD pipeline; deploy complete.}
+\end{center}
+\end{figure}
+
+\subsection{Integration}
+\par ~ Next, now that the function is deployed, we can begin connecting the frontend. First, we'll need the endpoint at which the function lives. To find this, we can navigate to API Gateway in the AWS console.
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/all-endpoints.PNG}
+  \caption{AWS API Gateway screenshot of all endpoints we have available for access.}
+\end{center}
+\end{figure}
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/invoke-url.PNG}
+  \caption{AWS API Gateway screenshot of our production stage, Invoke URL}
+\end{center}
+\end{figure}
+
+\par ~ First we create the feature view. This is defined in sos.dart within the screens folder, encapsulated in the lib folder. The feature view is made up of several widgets, each acting as a container, or higher-level parent to perform some function. The SOSPage encapsulates the SOSButton as its parent. The SOSButton encapsulates the ProgressRing StatefulWidget which will call the activateSOS method. The ProgressRing has a method called showConfirmation which will allow the user to select their emergency tier or cancel.
+
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/sospage.PNG}
+  \caption{Screenshot of the SOSPage widget's Dart class}
+\end{center}
+\end{figure}
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/sosbutton.PNG}
+  \caption{Screenshot of the SOSButton widget's Dart class}
+\end{center}
+\end{figure}
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/show-confirmation.PNG}
+  \caption{Screenshot of the showConfirmation method of ProgressRing StatefulWidget.}
+\end{center}
+\end{figure}
+
+\par ~ The activateSOS method is the beginning of the model implementation. The model will encapsulate calls to a service method that will invoke the Lambda function directly
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/activate-sos.PNG}
+  \caption{Screenshot of the activeateSOS method within the SOSModel class, a scoped model.}
+\end{center}
+\end{figure}
+
+
+\par ~ The method which invokes the Lambda function directly is implemented as callSOS. Note that the URL and path is the same as our Invoke URL and the path the we defined for the Lambda function. Also note the \texttt{http.post} call on the url. This is important because we defined that the application should only accept POST requests.
+\begin{figure}[H]
+\begin{center}
+  \includegraphics[scale=1]{code-screenshots/send-call.PNG}
+  \caption{sendCall service function within the api.dart file of the services package}
+\end{center}
+\end{figure}
+
+
+
 
 \section{Conclusion}
-
 \subsection{Implementation Challenges}
-\subsubsection{Lambda Compute Time}
-Throughout the development of the project, the only limitation that we have found as a result of using Lambda comes from the maximum compute time. Because Lambda instances are derived on a per-request, per-nanosecond basis (customers are charged for the amount of time their functions are running), there is a maximum cap of 15-minutes at which a single Lambda function can run for a single request.
+\subsubsection{Lambda Maximum Compute Time Limitation}
+\par ~ Throughout the development of the project, the only limitation that we have found as a result of using Lambda comes from the maximum compute time. Because Lambda instances are derived on a per-request basis (customers are charged for the amount of time their functions are running), there is a maximum cap of 15-minutes at which a single Lambda function can run for a single request. Because of this we have not been able to implement ESPollLoop, which will give our application the ability to send notifications on a periodic, repeating basis.
+
 \subsubsection{Identity Access and Management}
-Text
-\subsubsection{CloudWatch}
-Text
+\par ~ Similarly to our partial demo and implementation, one of the largest implementation issues we have had thus far is the integration of AWS CloudFormation for automatically provisioning the resources necessary for creating each Lambda function and their respective API Gateway route. Overall, assigning the correct permissions for the service workers responsible for creating these resources is the biggest issue. We currently still need to correct this issue.
 
 \subsection{Group Member Contributions}
-Text
-
-\subsection{Closing}
-Text
+\par ~ 
 
 
 \section{Glossary}
@@ -356,8 +492,12 @@ Text
 \begin{thebibliography}{9}
 \bibitem{one}
 scoped\_model 1.0.1 | Flutter Package --- \url{https://pub.dartlang.org/packages/scoped_model}
-\bibitem{two}
-What is the AWS Serverless Application Model (AWS SAM)? ~ \url{https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html}
+\bibitem{two} 
+		Mattihas Jung, Sascha Möllering, Peter Dalbhanjan, Peter Chapman, Christoph Kassen \\
+		\textit{Microservices on AWS; AWS Whitepaper}. \\
+		\texttt{\url{https://docs.aws.amazon.com/aws-technical-content/latest/microservices-on-aws/microservices-on-aws.pdf}}
+\bibitem{three}
+What is the AWS Serverless Application Model (AWS SAM)? --- \url{https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/what-is-sam.html}
 \end{thebibliography}
 
 % Appendix of figures
