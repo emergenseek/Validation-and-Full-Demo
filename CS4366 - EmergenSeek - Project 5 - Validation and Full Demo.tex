@@ -175,6 +175,15 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \end{center}	
 \end{figure}
 
+\begin{figure}[H]
+\begin{center}
+\centerline{
+	\includegraphics[scale=.2]{EmergenSeek-Backend.PNG}
+}
+\caption{Updated Cloudcraft diagram of the AWS resources, external APIs encapsulated by the backend, and frontend connection abstractions.}
+\end{center}	
+\end{figure}
+
 \par ~ No major changes have been made to this document since previous report previsions. This class diagram should be used as a loose reference and not a literal representation of how our backend is structured for reasons related to how Go programs are written. In this class diagram for our backend we have:
 \begin{enumerate}
 	\item[1.] Address --- Encapsulates the data necessary for representing an address.
@@ -217,18 +226,106 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \par ~ Microservices, on the other hand, are decentralized, independent components of a larger product that each do one thing well for the sake of the application as a whole. This is why we chose to follow this style of development. This is why we chose to follow a microservices architecture. We did not need to wait on one another to fulfill the implementation of a Lambda function. These \underline{loosely-coupled} components bring up many more challenges than a monolithic product, but their modularity and distributable attributes make them much easier and much faster to develop and deploy.
 \end{tcolorbox}
 	
-\begin{figure}[H]
-\begin{center}
-\centerline{
-	\includegraphics[scale=.2]{EmergenSeek-Backend.PNG}
-}
-\caption{Updated Cloudcraft diagram of the AWS resources, external APIs encapsulated by the backend, and frontend connection abstractions.}
-\end{center}	
-\end{figure}
 
 \section{Project Development Lifecycle} 
 \label{sec:pdl}
-\par ~ Text 
+\par ~ In this section we discuss our actual implementation details, beginning with the backend and moving on to the frontend. For the benefit of the reader, we will discuss our most complex Lambda function, ESSendEmergencyVoiceCall, which provides the frontend the ability to make phone calls via Twilio's API. The programming styles, and patterns used can be generalized to our other functions. Because of this, we will only cover the full lifecycle of one function in this section. Again, it is recommend that readers reference our GitHub repositories for more details and additional notes of reference: (\url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client}) 
+
+\subsection{Go - Setup}
+\par ~ First, we begin with our backend repository, in this repository we have 2 key folders, \texttt{common} and \texttt{functions}. Common encapsulates, four packages, \texttt{package database}, \texttt{package driver}, \texttt{package models}, and \texttt{package notification}. The names of these packages are self explanatory. Database encapsulates database functions, driver encapsulates important backend logic functions, models encapsulates data models, and notification encapsulates functions related to Twilio Voice and SMS communication. The const.go file defines constants used through the application and belongs to the parent package, \texttt{package common}. The functions folder encapsulates our serverless application repository, for this walk through we will only focus on ESSendEmergencyVoiceCall. Within the ESSendEmergencyVoiceCall we have 6 key files. 
+\begin{enumerate}
+	\item[1.] event.json -- A test request sent to the function
+	\item[2.] main\_test.go -- Unit tests for the function
+	\item[3.] main.go -- The function definition (Lambda handler)
+	\item[4.] Makefile -- For convince, to make local testing easier
+	\item[5.] request.go -- Defines the expected request body or parameters which will be sent to the function. 
+	\item[6.] template.yaml -- Used for local testing of Lambda and API Gateway using the Serverless Application Model command-line interface and Docker
+\end{enumerate}
+
+\begin{figure}[H]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{code-screenshots/one.png}
+  \caption{Screenshot of the functions folder and the contents of the common folder in the backend repository.}
+\endminipage\hfill
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{code-screenshots/two.png}
+  \caption{Screenshot of the contents of the functions folder in the backend repository.}
+\endminipage\hfill
+\minipage{0.32\textwidth}%
+  \includegraphics[width=\linewidth]{code-screenshots/three.png}
+  \caption{Screenshot of the contents of the ESSendEmergencyVoiceCall repository within the functions folder.}
+\endminipage
+\end{figure}
+
+\par ~ We will begin with main.go. main.go defined within the \texttt{package main} namespace, houses the \texttt{func main} function. This is a requirement of the Go programming language, the entrypoint should be called \texttt{func main} and must exist within \texttt{package main}. Within \texttt{func main} was have a call to lambda.Start and pass in Handler. Start is a function within the lambda package exposed by the "github.com/aws/aws-lambda-go/lambda" import and Handler is a function defined above func main. Anytime the ESSendEmergencyVoiceCall function is called, the code within the Handler is executed. The function passed to \texttt{lambda.Start} does not need to be called Lambda, it must simply be a function with has the expected signature; 1 input parameter of type \texttt{events.APIGatewayProxyRequest} and two return parameters of type \texttt{events.APIGatewayProxyResponse} and \texttt{error}, in that exact order.
+
+\par ~ As we see in the screenshot, the first duty of the Handler is to verify the request. This mean to match the expectation of the API against the request body provided by the user. To do this, we use a helper function that we defined, called \texttt{verifyRequest}. If any expectations are failed, we return an error to the user. 
+
+\begin{figure}[H]
+\minipage{0.32\textwidth}
+  \includegraphics[width=\linewidth]{code-screenshots/four.png}
+  \caption{Screenshot of \texttt{func main} within \texttt{package main}}
+\endminipage\hfill
+\minipage{0.6\textwidth}
+  \includegraphics[width=\linewidth]{code-screenshots/seven.png}
+  \caption{Screenshot of imports defined for the function. Their accessors are either defined as an alias to the left of the import name (like retry), or as the package name defined by the dependency. Standard library packages are defined above external, third-party dependencies.}
+\endminipage\hfill
+\end{figure}
+
+\begin{figure}[H]
+  \ \includegraphics[scale=.6]{code-screenshots/five.png}
+  \caption{Screenshot of the first few lines of the Handler definition}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/six.png}
+  \caption{Screenshot of the definition for \texttt{verifyRequest}}\label{fig:vr}
+\end{figure}
+
+\par ~ The request checked against in Figure ~\ref{fig:vr}, line 17, is defined in request.go. In the Go programming language, data within the same package may be referenced globally. This is known as the package scope (within the same folder, ES. The importance of struct tags (\texttt{`json:"user\_id"`}), should be noted as these define the expectation of the request sent by the user.
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/eight.png}
+  \caption{Screenshot of Request type.}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/nine.png}
+  \caption{Screenshot of Validate, pointer-receiver method bound to the Request type.}
+\end{figure}
+
+\par ~ Now that the request is validated, we can continue the function execution, the flow is as follows, annotated with code line numbers present in the next fix figures.
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/handler-42-63.png}
+  \caption{Screenshot of lines 42 through 63 of \texttt{func Handler}}\label{fig:hm}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/create-all.png}
+  \caption{Screenshot of \texttt{func CreateAll} within \texttt{package driver}}\label{fig:ca}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/get-user.png}
+  \caption{Screenshot of \texttt{func GetUser} within \texttt{package database}}\label{fig:gu}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/update-location.png}
+  \caption{Screenshot of \texttt{func UpdateLocation} within \texttt{package database}}\label{fig:ul}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/get-address.png}
+  \caption{Screenshot of \texttt{func GetAddress} within \texttt{package driver}}\label{fig:ga}
+\end{figure}
+
+\begin{figure}[H]
+  \includegraphics[scale=.6]{code-screenshots/create-twilml.png}
+  \caption{Screenshot of \texttt{func CreateTwilMLXML} within \texttt{package driver}}\label{fig:ct}
+\end{figure}
+
+First, Figure ~\ref{fig:hm} line 42, we call CreateAll (Figre ~\ref{fig:ca} in the driver package. This will return 4 items, an instance of our database, a connection to our Twilio functions within the notification package, an AWS session that can be used to authenticate with different services, and mapKey used for making requests to MapQuest. Then, Figure
 
 \section{Conclusion}
 
