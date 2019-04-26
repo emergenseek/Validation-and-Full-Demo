@@ -3,6 +3,7 @@
 \usepackage{amsmath,amssymb}
 \usepackage{graphicx,float,tikz}
 \usepackage{listings}
+\usepackage{tcolorbox}
 
 \fontfamily{times}
 \usepackage[colorlinks = true,
@@ -34,6 +35,7 @@
 \end{titlepage}
 
 \vspace*{\fill}
+\vspace{-2cm}
 \begin{abstract}
 In this final report, we describe and detail the validation of EmergenSeek, a multiuse, cross-platform mobile application providing simple access to emergency services and contact connections. As with previous reports, we will structure the report by enumerating on the frontend and backend. Dissimilarly, we will only describe necessary details in the validation of our implementations, to the extent that, any other developer with some programming background will be able to successfully implement our system's components. Only necessary details will be presented to the reader and care should be taken when reading them\footnote{Concepts such as continuous integration, continuous deployment, microservices, serverless computing, NoSQL databases, APIs, and widget-based mobile development will be discussed. These new concepts may be difficult to grasp initially, but sufficient details will be provided.}. Restatements from previous deliverable reports will be made to remind the reader of pre-defined, but important information. Also, a glossary is provided at the end of the report to define terms and jargon that may be confusing or unfamiliar for the reader. \\
 \textit{Keywords:} API Gateway, CI/CD, Cloud, Dart, Flutter, Golang, Lambda, Mobile, Serverless
@@ -46,9 +48,9 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 
 
 \section{Introduction}
-\par ~ The development of EmergenSeek has been an effective software engineering experience for our group. In this final submission, we will discuss our project by first restating the idea, project motivations, and our successful implementations. Then, we will discuss the final state of our UML diagrams and architecture, for this Spring semester. After, we will discuss the development cycle for the frontend and backend and briefly touch on the microservices architecture that we follow. 
+\par ~ The development of EmergenSeek has been an effective software engineering experience for our group. In this final submission, we will discuss our project by (1) restating the idea, project motivations, and our successful implementations. Then, (2) we will discuss the final state of our UML diagrams and architecture, for this Spring semester. After, (3) we will discuss the development cycle for the frontend and backend and briefly touch on the microservices architecture that we follow. 
 
-\par ~ Next, a walkthrough of the discussed development lifecycle, using only necessary details and supplementing those details with additional code comments, snippets, and screenshots. This walkthrough will allow the user to understand the structure of our application, both frontend and backend. The walkthrough will not cover \emph{everything} as the amount of content necessary for a walkthrough that assumes the reader has zero prior knowledge of the systems and concepts used in our project would take an obstructive amount of explanation. Then, we will describe the current state of our serverless application repository; our collection of Lambda functions. To end on our discussion of the validation, we will display Flutter views of the mobile application and their respective functionality. 
+\par ~ Next, (4) a walkthrough of the discussed development lifecycle, using only necessary details and supplementing those details with additional code comments, snippets, and screenshots. This walkthrough will allow the user to understand the structure of our application, both frontend and backend. The walkthrough will not cover \emph{everything} as the amount of content necessary for a walkthrough that assumes the reader has zero prior knowledge of the systems and concepts used in our project would take an obstructive amount of explanation. Then, (5) we will describe the current state of our serverless application repository; our collection of Lambda functions. To end (6) on our discussion of the validation, we will display Flutter views of the mobile application and their respective functionality. 
 
 \par ~ It is very important to note that our project uses programming languages which are young in maturity and may not be familiar to the reader. But, our backend, written in Go, has syntax very similar to the C and C++ programming languages. Our frontend, written in Dart, has syntax very similar to the Java programming language. As a result of these similarities, it is permissible for the reader to assume what the code does as the syntax is, for the most part, straightforward. To conclude we will detail team member contributions, implementation issues, and steps moving forward with the project.
 
@@ -69,7 +71,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 	\end{itemize}
 \end{enumerate}
 
-\par ~ As all of our project code is open-source, readers are encouraged to reference the code repositories for our project. They are located at \url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client} for our backend and frontend code, respectively. Readers who would like more insight, or have questions are welcome to open an issue or pull request on either of these GitHub repositories.
+\par ~ As all of our project code is open-source, readers are encouraged to reference the code repositories for our project. Repositories also contain additional setup notes and details. They are located at \url{https://github.com/emergenseek/backend} and \url{https://github.com/emergenseek/Flutter-Client} for our backend and frontend code, respectively. Readers who would like more insight, or have questions are welcome to open an issue or pull request on either of these GitHub repositories.
 
 \section{Project Overview}
 \subsection{Project Definition, and Implemented Features}
@@ -92,7 +94,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \par ~ Features which are partially implemented are as follows:
 \begin{enumerate}
 	\item[1.] Periodic notifications to contacts (location-based polling) --- The user shall be able to utilize the mobile client to send periodically send their location information to contacts. While the logic is in-place, we currently do not have a successful implementation of repeating the location polling.
-	\item[2.] Retrieval of international emergency service numbers (ambulance, fire, and police), depending on the user's current location. Connections to the front-end have not been made yet.
+	\item[2.] Retrieval of international emergency service numbers (ambulance, fire, and police), depending on the user's current location. Connections to the front-end have not been made yet. 
 \end{enumerate}
 
 \subsection{Future Features}
@@ -107,7 +109,6 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \par ~ In this section we will discuss our completed Unified Modeling Language (UML) diagrams and design documents. Items are presented with a figure of the design unit and briefly described.
 
 \subsection{Use-case Diagram}
-
 \begin{figure}[H]
 \begin{center}
 \centerline{
@@ -140,7 +141,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \end{center}	
 \end{figure}
 
-\par ~ The application's views begins via a RootPage, this root page can be thought of a session manager keeping track of the user though an \texttt{auth} object. This object tracks actions that occur on certain events; if the user is logged in, signed out, or waiting for some communication with the backend to complete. This session state is managed via the LoginPage. From the RootPage we have a HomePage. This homepage is displayed once the base authentication, encapsulated as an attribute of the RootPage class, has received a successful response from Firebase and tells the application that the user is authorized. From the home page, we have buttons that connect the user to other views. These views, ContactsPage, ServiceLocatorPage, PorfilePage, LocationUpdatesPage, menus and navigations are displayed at the end of our report. 
+\par ~ The application's views begins via a RootPage, this root page can be thought of a session manager keeping track of the user though an \texttt{auth} object. This object tracks actions that occur on certain events; if the user is logged in, signed out, or waiting for some communication with the backend to complete. This session state is managed via the LoginPage. From the RootPage we have a HomePage. This homepage is displayed once the base authentication, encapsulated as an attribute of the RootPage class, has received a successful response from Firebase and tells the application that the user is authorized. From the home page, we have buttons that connect the user to other views. These views, ContactsPage, ServiceLocatorPage, ProfilePage, LocationUpdatesPage, menus and navigations are displayed at the end of our report. 
 
 \begin{figure}[H]
 \begin{center}
@@ -168,7 +169,7 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \begin{figure}[H]
 \begin{center}
 \centerline{
-	\includegraphics[scale=1]{final-diagrams/backend-class.PNG}
+	\includegraphics[scale=1.3]{final-diagrams/backend-class.PNG}
 }
 \caption{Class diagram for the EmergenSeek backend.}
 \end{center}	
@@ -187,13 +188,9 @@ In this final report, we describe and detail the validation of EmergenSeek, a mu
 \end{enumerate}
 
 \section{Implementation Details}
-\par ~ The implementation of EmergenSeek may be broken of into two core components, Amazon Web Services' (AWS) Lambda and the cross-platform mobile development framework Flutter. These two components also have their own respective, external dependencies and services. Our Lambda functions were written using the Go programming language and the Flutter application depends on the Dart programming language. 
-
-\subsection{Lambda Development - Backend}
-\par ~ Before discussing our implementation, we will give some background on why we chose to use AWS Lambda. Lambda is a serverless compute service, canonically referred to as a Functions-as-a-Service (FaaS) offering. This means that we do not need to manage any servers to deploy our code. Additionally, this manged compute is scaled up and down as necessary. If our application were to, overnight, receive thousands and thousands of users, we would be able to handle that load as a result of Lamba's auto-scaling functionality. Throughout the development of the project, the only limitation that we have found as a result of using Lambda comes from the maximum compute time. Because Lambda instances are derived on a per-request, per-nanosecond basis (customers are charged for the amount of time their functions are running), there is a maximum cap of 15-minutes at which a single Lambda function can run for a single request.
+\par ~ The implementation of EmergenSeek may be broken of into two core components, Amazon Web Services' (AWS) Lambda and the cross-platform mobile development framework Flutter. These two components also have their own respective, external dependencies and services. Our Lambda functions were written using the Go programming language and the Flutter application depends on the Dart programming language. The following subsections should be read as a preface for the walkthrough of our development lifecycle. 
 
 \subsection{Flutter Development - Frontend}
-Dependencies: Firebase, open-source flutter libraries and components, Google Maps components, Android permissions
 \par ~ For the implementation of a new feature within the client, several aspects must first be considered. Nearly every feature is broken down into three components: the feature view, the feature model, and the interfaces required to generate the content of the feature. During our development, we would typically begin a feature's implementation with the feature view. By beginning a feature's development with the feature view, we were able to prioritize the user-experience and develop a clearer goal of our features based on what would be most intuitive as a user. The feature view essentially consists of a widget representing a page within the app, along with any sub-widgets representing individual graphical components within the page. 
 
 \par ~ Our top-level page widgets generally started off as stateless widgets, with certain widgets being refactored into stateful widgets as their requirements and responsibilities became better defined. This allowed us to minimize each widget's internal state management as much as possible, instead delegating state management to our feature models. After developing a general prototype of our feature's view, we would move onto implementing the feature model. While our stateful widgets manage small sets of internal state data, a more accessible and persistent state model was necessary for our service. To address this, we utilized Flutter's scoped models \cite{one}. Nearly every key feature possesses a feature model which contains important state data relevant to that feature. These models also provide an interface for managing the feature states from anywhere within the app. Once a feature model is created, it is included as a reference within our app-wide model which is passed into the widget hierarchy at the root of our application.
@@ -201,17 +198,25 @@ Dependencies: Firebase, open-source flutter libraries and components, Google Map
 \par ~ After creating both the feature view and model, we would move onto considering how the feature would interface with our backend or third-party services. After determining which backend Lambda functions would be relevant to a specific feature, the respective API requests would be written as modular functions within an API service class. Some features required additional Flutter plugins to generate their content as well, which would be imported and utilized within a wrapper class. After implementing our feature services, we would then integrate the appropriate calls within the feature model. We would then add our model references within the feature view and call the various model functions for accessing and managing the feature's state data. One of our main considerations in implementing new features was ensuring a responsive user-experience. Many of our features rely on retrieving and updating data from our backend, which led to challenges in rendering our views quickly. Our solution to this was utilizing Flutter's future builder widget, which allowed us to display placeholders while our API requests were sent and the responses were received and processed.
 
 
-\subsection{Subsystems}
-\par ~ The backend of the application will be comprised of the following. For brevity, each is labeled with a tier:
-\begin{enumerate}
-	\item[1.] Application Tier - AWS Lambda, a serverless, Functions-as-a-Service compute offering to run our Go code coupled with AWS API Gateway.
-	\item[2.] Database Tier - DynamoDB to store user data and information. We selected a NoSQL database because we knew that there would be changes to our data and schema, and wanted to rapidly make these changes without formally defining schemas which would be otherwise harder to change in the future.
-	\item[3.] Notification Tier - The Twilio API provides the system with programmable SMS and voice communications. It should be noted that our application does not use trial plan of Twilio and instead uses the paid version of the service. This allows us to contact any valid phone number through Twilio's API.
-	\item[4.] Location Tier - Google's Places and MapQuest's Geocoding APIs are used to better define the location of users and various emergency services. For instance, translation of latitude and longitude to human readable address.
-\end{enumerate}
+\subsection{Lambda Development - Backend}
+\par ~ Before discussing our implementation, we will give some background on why we chose to use AWS Lambda. Lambda is a serverless compute service, canonically referred to as a Functions-as-a-Service (FaaS) offering. This means that we do not need to manage any servers to deploy our code. Additionally, this manged compute is scaled up and down as necessary. If our application were to, overnight, receive thousands and thousands of users, we would be able to handle that load as a result of Lambda's auto-scaling functionality. Now that we have some background of Lambda, on to the implementation details.
 
-The subsystems of the application are divided up into single-responsibility, service-oriented architecture. This means that the backend consists of several Lambda functions and each function is responsible for only one thing. In total, we needed \emph{12} Lambda functions. The break down of their functionality and responsibilities are enumerated below, These dependencies include any external APIs, datastores, or databases. As usual, Functions are prefixed with \texttt{ES} and suffixed with a meaningful name which explains their role.
+\par ~ To start, we create a specialized Go function that conforms to the expectations of the Lambda software development utilities provided by Amazon. This function receives an event, which is simply an HTTP request with or without a body, and returns an event; an HTTP response with a body. The logic that occurs to process the request and return a desired response is where backend logic comes in. Though communication of various APIs (Google, MapQuest, and Twilio) and our DynamoDB database tables, we can produce these results to fulfill the requirements and expectations desired by our frontend users. These users do not have to think about how these actions occur because they are abstracted away. Instead they only need to know the expected request parameters, and the expected response results. Additionally, because our backend is, as a whole, a REST API, we can create multiple clients on multiple platforms (i.e. web in addition to mobile). While these are not entirely all of the components necessary for developing a fully functioning, long-term and highly scaleable application programming interface, they more than suffice for the scope of this course. 
 
+\par ~ After implementing, formally, and informally testing the Lambda function on our local machines, it is ready for deployment. This deployment happens in three stages, all managed by AWS CodeStar. The first stage happens whenever a push to our \texttt{master} Git branch is done. AWS CodeStar will trigger a build via the CodeBuild service. When the build is triggered, the second stage will begin. CodeBuild will read the buildspec.yml file in the root of our repository and build binaries out of all of the Go code responsible for each function. The binaries will then be put into a Simple Storage Service bucket so that CloudFormation may retrieve them when creating each Lambda function and associating an API Gateway endpoint to it. CloudFormation is a key part of step three, the deployment. After the binaries have been build and put in an accessible place, CloudFormation will generate updates to our infrastructure by referencing a template.yml file, also in the root of our repository. This ever important, template.yml is referred to as Infrastructure as Code. This YAML definition will be enumerated on in the next section.
+
+\vspace{2mm}
+\begin{tcolorbox}
+	\emph{Microservices vs. Monoliths} \\
+\par ~ As students, a monolithic projects are something that we are very familiar with. A monolith is a centralized codebase that contains all of the components and assets of a project or product. Creating a monolith is definitely a lot simpler because everything relating to the project has the same locality. They typically run on the same server, use the same resources (CPU/RAM), are sometimes distributed as executable binaries. The real issues arise when changes need to be made and components need to be scaled. Developers of the monolith must wait on the components and features that \emph{their} assigned components and features are dependent upon before they may start working. Until then, they cannot begin development on a particular part of the product. This can be mitigated with additional planning and project management techniques, but is definitely a large negative that monoliths pose. Additionally, the core features of the monolith must all be written in 1 language, otherwise, additional and often convoluted implementations must be done for multiple languages to communicate with each other despite sharing the same locality. For example, running each language as a process and performing some form of interprocess communication using threads or internal web servers. Monoliths are very \underline{tightly-coupled} with many strong dependencies.
+
+\vspace{2mm}
+\hrule
+\vspace{2mm}
+
+\par ~ Microservices, on the other hand, are decentralized, independent components of a larger product that each do one thing well for the sake of the application as a whole. This is why we chose to follow this style of development. This is why we chose to follow a microservices architecture. We did not need to wait on one another to fulfill the implementation of a Lambda function. These \underline{loosely-coupled} components bring up many more challenges than a monolithic product, but their modularity and distributable attributes make them much easier and much faster to develop and deploy.
+\end{tcolorbox}
+	
 \begin{figure}[H]
 \begin{center}
 \centerline{
@@ -225,12 +230,30 @@ The subsystems of the application are divided up into single-responsibility, ser
 \label{sec:pdl}
 \par ~ Text 
 
+\section{Conclusion}
+
+\subsection{Implementation Challenges}
+\subsubsection{Lambda Compute Time}
+Throughout the development of the project, the only limitation that we have found as a result of using Lambda comes from the maximum compute time. Because Lambda instances are derived on a per-request, per-nanosecond basis (customers are charged for the amount of time their functions are running), there is a maximum cap of 15-minutes at which a single Lambda function can run for a single request.
+\subsubsection{Identity Access and Management}
+Text
+\subsubsection{CloudWatch}
+Text
+
+\subsection{Group Member Contributions}
+Text
+
+\subsection{Closing}
+Text
+
+
 \section{Glossary}
 \begin{enumerate}
 	\item[$\bullet$] Cross-platform application - software which has a single implementation, but may be executed on different distributions. (i.e. one code base, running on many different operating systems or processor architectures.)
 	\item[$\bullet$] Serverless application repository - single responsibility application definitions which act as independent entities. The application repository as a whole defines the API for our mobile application. (i.e. each serverless application is a Lambda function, and the lambda function is responsible for a system feature.)
 	\item[$\bullet$] Application Programming Interface (API) - Definitions and communication protocols used for building the structure of software.
 	\item[$\bullet$] HyperText Transfer Protocol (HTTP) - An application protocol used heavily for websites and services throughout the Internet.
+	\item[$\bullet$] REpresentational State Transfer (REST) - A architectural style for APIs that define some specifications for creating web-based services.
 \end{enumerate}
 
 \begin{thebibliography}{9}
